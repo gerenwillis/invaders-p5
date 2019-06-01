@@ -1,10 +1,3 @@
-/* 
-        To Do List
-    
-    4) Add Bosses?
-    6) Move for loops out of draw();
-*/
-
 //framerate
 let fr = 60;
 let counter = 0;
@@ -31,6 +24,7 @@ let enemySize = 15;
 let enemySpeed = 4;
 let rando;
 let enemyWaveTiming = 0;
+let maxEnemiesOnScreen = 50;
 
 // Flying Enemies
 let flyEnemies = [];
@@ -101,7 +95,7 @@ function draw() {
         level.loadCrawlEnemies(levelData[currentLevel].numCrawlEnemies);
 
         // if ready for next wave of enemies with new level
-        if (enemyWaveTiming == 0 && waveCounter < levelData[currentLevel].numEnWaves && enemies.length <= 50) {
+        if (enemyWaveTiming == 0 && waveCounter < levelData[currentLevel].numEnWaves && enemies.length <= maxEnemiesOnScreen) {
             level.loadEnemies(enemies);
             waveCounter += 1;
         } else if (waveCounter < levelData[currentLevel].numEnWaves && enemies.length <= 50) {
@@ -214,9 +208,22 @@ function Level() {
     this.numFlyEnemies = levelData[currentLevel].numFlyEnemies;
     
     this.loadEnemies = function() {
-        for (let i = 0; i < this.numEnemies; i++) {
-            enemies.push(new Enemy(windowW + ((i + 1) * enemySize), enemySize));
-        };
+        let counter = 0;
+        if (enemies.length <= maxEnemiesOnScreen) {
+            for (let i = 0; i < this.numEnemies; i++) {
+                enemies.push(new Enemy(windowW + ((i + 1) * enemySize), enemySize));
+            }
+        } else {
+            for (let i = 0; i < enemies.length; i++) {
+                if (enemies[i].speed == 0 && counter < levelData["numEnemies"]) {
+                    enemies[i].speed = enemySpeed;
+                    enemies[i].size = enemySize;
+                    enemies[i].y = enemySize;
+                    enemies[i].x = windowW + ((counter + 1) * enemySize);
+                }
+            }
+        }
+        
         enemyWaveTiming = fr * 2;
     }
     
@@ -284,7 +291,8 @@ function Level() {
             levelStarted = false;
             if (levelData[currentLevel + 1]) {
                 currentLevel += 1;
-                player.resetShip();
+                this.x = windowW / 2;
+                this.y = windowH * 0.9;
                 enemyWaveTiming = 0;
             } else {
                 gameOver = true;
@@ -322,11 +330,11 @@ function Level() {
                 textSize(16);
                 text("You matched your previous high score...keep going!!!", windowW/2, windowH/2 - 64)
             } else {
-                text("You set a new high score!!!", windowW/2, windowH/2 - 64);
+                text("You achieved a new high score!!!", windowW/2, windowH/2 - 64);
                 localStorage.setItem("High Score", score);
             }
 
-            if (lives > 0) {
+            if (lives >= 0) {
                 fill(random(200, 255), random(200, 255), random(200, 255));
                 stroke(random(100, 255), random(100, 255), random(100, 255));
                 text("You win!!!", windowW/2, windowH/5);
@@ -459,18 +467,22 @@ function Bullet(x, y, speed, size) {
 function Enemy(x, y) {
     this.x = x;
     this.y = y;
+    // Enemies speed becomes increasingly randomized at higher levels.
     this.speed = enemySpeed + floor(random(1, currentLevel)) / 3;
     this.size = enemySize;
     this.dir = "left";
     this.isFlyer = false;
     
     this.render = function() {
+        let newSize = this.size + (sinPath[abs(floor(this.x))] / 3);
         tint(((this.y / windowH) * 255) + 50, 255, 255, 255);
-        image(enemy1IMG, this.x  + (sinPath[abs(floor(this.x))] / 2), this.y, this.size + (sinPath[abs(floor(this.x))] / 2), this.size + (sinPath[abs(floor(this.x))] / 8));
+        image(enemy1IMG, this.x, this.y, newSize, newSize);
     }
     
     this.animate = function() {
-        if (floor(random(0, 5000)) == 1 && this.x < windowW * 0.9 && this.x > windowW * 0.1) { // 1 in 5000 chance over 120fps of becoming a flyer, limited to within bounds of visibility
+        let totalEnemiesInLevel = levelData[currentLevel].numEnemies * levelData[currentLevel].numEnWaves;
+        let speedIncrease = constrain((totalEnemiesInLevel / enemies.length) / 10, 0, enemySpeed);
+        if (floor(random(0, 5000)) == 1 && this.x < windowW * 0.9 && this.x > windowW * 0.1) { // 1 in 5000 chance over fps of becoming a flyer, limited to being generated within bounds of visibility.
             this.isFlyer = true;
         }
         if (!this.isFlyer) { // Do regular motion
@@ -479,13 +491,13 @@ function Enemy(x, y) {
                 levelStarted = false;
             }
             if (this.dir == "left" && this.x > this.size) {
-                this.x -= this.speed;
+                this.x -= this.speed + speedIncrease;
             } else if (this.dir == "left" && this.x <= this.size) {
                 this.x = this.size - this.x; // For fixing misalignment from uneven turns
                 this.y += this.size;
                 this.dir = "right";
             } else if (this.dir == "right" && this.x < windowW - this.size) {
-                this.x += this.speed;
+                this.x += this.speed + speedIncrease;
             } else if (this.dir == "right" && this.x >= windowW - this.size) {
                 this.x = this.x - (this.size - 2 * (windowW - this.x)); // For fixing misalignment from uneven turns
                 this.y += this.size;
@@ -517,9 +529,9 @@ function FlyingEnemy(player) {
     this.speed = 5;
     
     this.render = function() {
-        tint(255, 255);
+        // Gets redder as it flies towards the bottom of the screen
+        tint(((this.y / windowH) * 255) + 50, 255, 255, 255);
         image(enemy2IMG, this.x, this.y, enemySize);
-        //circle(this.x, this.y, this.size);
     }
     
     this.animate = function() {
