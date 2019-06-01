@@ -209,19 +209,8 @@ function Level() {
     
     this.loadEnemies = function() {
         let counter = 0;
-        if (enemies.length <= maxEnemiesOnScreen) {
-            for (let i = 0; i < this.numEnemies; i++) {
-                enemies.push(new Enemy(windowW + ((i + 1) * enemySize), enemySize));
-            }
-        } else {
-            for (let i = 0; i < enemies.length; i++) {
-                if (enemies[i].speed == 0 && counter < levelData["numEnemies"]) {
-                    enemies[i].speed = enemySpeed;
-                    enemies[i].size = enemySize;
-                    enemies[i].y = enemySize;
-                    enemies[i].x = windowW + ((counter + 1) * enemySize);
-                }
-            }
+        for (let i = 0; i < this.numEnemies; i++) {
+            enemies.push(new Enemy(windowW + ((i + 1) * enemySize), enemySize));
         }
         
         enemyWaveTiming = fr * 2;
