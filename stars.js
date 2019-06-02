@@ -42,14 +42,16 @@ class Star {
     applyForce(force) {
         let f = force.copy();
         f.mult(this.r);
-        this.acc.add(f);
+        //this.acc.add(f);
+        //Simplified version as the matrix math was a serious bottleneck and we're really only dealing with one variable here.
+        this.acc.y += f.y;
     }
 
     render() {
         stroke(255, 127);
         strokeWeight(2);
         //point(this.pos.x, this.pos.y);
-        line(this.pos.x, this.pos.y, this.pos.x, this.pos.y);
+        line(this.pos.x, this.pos.y, this.pos.x, this.pos.y - this.r);
     }
     
     update() {

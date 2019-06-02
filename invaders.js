@@ -464,8 +464,10 @@ function Enemy(x, y) {
     
     this.render = function() {
         let newSize = this.size + (sinPath[abs(floor(this.x))] / 3);
-        tint(((this.y / windowH) * 255) + 50, 255, 255, 255);
-        image(enemy1IMG, this.x, this.y, newSize, newSize);
+//        tint(((this.y / windowH) * 255) + 50, 255, 255, 255);
+//        image(enemy1IMG, this.x, this.y, newSize, newSize);
+        // Performance improved version, prevents tint from working properly though...
+        copy(enemy1IMG, 0, 0, enemy1IMG.width, enemy1IMG.height, this.x, this.y, newSize, newSize);
     }
     
     this.animate = function() {
