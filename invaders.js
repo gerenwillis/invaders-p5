@@ -467,6 +467,7 @@ function Enemy(x, y) {
 //        tint(((this.y / windowH) * 255) + 50, 255, 255, 255);
 //        image(enemy1IMG, this.x, this.y, newSize, newSize);
         // Performance improved version, prevents tint from working properly though...
+        fill(((this.y / windowH) * 255) + 50, 255, 255, 255);
         copy(enemy1IMG, 0, 0, enemy1IMG.width, enemy1IMG.height, this.x, this.y, newSize, newSize);
     }
     
@@ -570,17 +571,28 @@ function CrawlEnemy() {
     }
     
     this.render = function() {
-        tint(255, 255);
+        tint(255, 255, ((this.y / windowH) * 255), 255);
         image(enemy3IMG, this.x, this.y + sinPath[abs(floor(this.x))], this.width, this.height);
     }
-    
+    let xoff = 0.0;
     this.update = function() {
-        if (this.dir === "left") {
-            this.x -= this.speed + random(0, 1);
+        xoff += xoff + 0.01;
+        let n = (noise(xoff) * this.speed) / 2;
+        let rnd = random(-1, 1);
+        if (this.dir === "left" && (this.x >= 0.75 * windowW || this.x <= 0.25 * windowW)) {
+            this.x -= this.speed + n;
+            //this.y += n * rnd * this.speed;
+        } else if (this.dir === "right" && (this.x > 0.75 * windowW || this.x < 0.25 * windowW)) {
+            this.x += this.speed + n;
+            this.y += n * rnd * this.speed;
+        } else if (this.dir == "left" && this.x > 0.25 * windowW){
+            this.x -= this.speed + n;
+            this.y += n * this.speed + n;
         } else {
-            this.x += this.speed + random(0, 1);
+            this.x += this.speed + n;
+            this.y += n * this.speed + n;
         }
-        if (this.x > windowW + this.size * 2 || this.x < 0 - this.size * 2) {
+        if (this.x > windowW + this.size * 2 || this.x < 0 - this.size * 2 || this.y > windowH + this.size) {
             //remove from array
             let id = findWithTwoAttr(crawlerEnemies, "x", "y", this.x, this.y);
             crawlerEnemies.splice(id, 1);
