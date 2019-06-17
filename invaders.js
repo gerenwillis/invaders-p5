@@ -180,7 +180,7 @@ function setSinArr() {
     let amplitude = 20;
     let h = 0;
     let dir = "up";
-    for (let w = 0; w < windowW; w++) {
+    for (let w = 0; w < windowW * 1.2; w++) {
         sinPath.push(h);
         if (h >= amplitude) {
             dir = "down";
@@ -463,12 +463,12 @@ function Enemy(x, y) {
     this.isFlyer = false;
     
     this.render = function() {
-        let newSize = this.size + (sinPath[abs(floor(this.x))] / 3);
+        let newSize = this.size + ((sinPath[abs(this.x)]) / 3) | 0;
 //        tint(((this.y / windowH) * 255) + 50, 255, 255, 255);
 //        image(enemy1IMG, this.x, this.y, newSize, newSize);
         // Performance improved version, prevents tint from working properly though...
         fill(((this.y / windowH) * 255) + 50, 255, 255, 255);
-        copy(enemy1IMG, 0, 0, enemy1IMG.width, enemy1IMG.height, this.x, this.y, newSize, newSize);
+        copy(enemy1IMG, 0, 0, int(enemy1IMG.width), int(enemy1IMG.height), int(this.x), int(this.y), newSize, newSize);
     }
     
     this.animate = function() {
@@ -511,6 +511,7 @@ function Enemy(x, y) {
                 skip = true; // Fixes bug with iterating twice over next enemy
             }
         }
+        this.x = this.x | 0;
     }
 }
 

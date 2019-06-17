@@ -48,7 +48,8 @@ class Star {
     }
 
     render() {
-        stroke(255, 127);
+        // this.r = 1 -> 5; Max opacity 127
+        stroke(255, this.r * 25);
         strokeWeight(2);
         //point(this.pos.x, this.pos.y);
         line(this.pos.x, this.pos.y, this.pos.x, this.pos.y - this.r);
